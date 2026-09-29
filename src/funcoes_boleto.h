@@ -45,29 +45,6 @@ int calcmod10(string camposemponto)
 	return soma % 10;
 }
 
-int modulo11(string codigodebarras)
-{
-	int soma = 0;
-	int multiplicador = 2;
-
-	for (int i = (int)codigodebarras.length() - 1; i >= 0; i--)
-	{
-		int n = codigodebarras[i] - '0'; // transforma em int
-		soma += n * multiplicador;
-		multiplicador++;
-		if (multiplicador > 9) // impede do multiplicador passar de 9
-			multiplicador = 2;
-	}
-
-	int resto = soma % 11;
-	int dv = 11 - resto;
-
-	if (dv == 0 || dv == 10 || dv == 11) // regra especial do boleto
-		dv = 1;
-
-	return dv;
-}
-
 string conversao(string codedebarras) // converte o codigo de barras na linha digitavel sem os DV's
 {
 	string semDV = "";
@@ -118,11 +95,6 @@ int modulo10(string linhadigi, int campo)
 	}
 }
 
-int calcula_dv_modulo10(int numero) //
-{
-	return -1;
-}
-
 // calcula o dígito verificador de um número (MÓDULO 11)
 int modulo11(string codigodebarras)
 {
@@ -145,9 +117,4 @@ int modulo11(string codigodebarras)
 		dv = 1;
 
 	return dv;
-}
-
-int calcula_dv_modulo11(int numero)
-{
-	return -1;
 }
