@@ -1,6 +1,9 @@
 // funcoes utilizadas na codificacao / decodificacao
 #include <iostream>
 #include <string>
+#include <format>
+#include <chrono>
+
 using namespace std;
 
 int somardigitos(int n) // faz as somas dos dois algarismos caso seja maior que 10
@@ -118,3 +121,31 @@ int modulo11(string codigodebarras)
 
 	return dv;
 }
+
+int fator_vencimento(string data_vencimento){
+	// usando a biblioteca chrono para calcular a diferença de dias
+	// baseado em exemplo encontrado via Google
+	using namespace std::chrono;
+	// divide a string em partes
+	unsigned int dia = stoi(data_vencimento.substr(0, 2));  
+	unsigned int mes = stoi(data_vencimento.substr(3, 2));  
+	int ano = stoi(data_vencimento.substr(6, 4));  
+	
+	// data de referência  
+	year_month_day ref{year{1997}, month{10}, day{7}};
+	// vencimento
+    year_month_day venc{year{ano}, month{mes}, day{dia}};
+
+    // sys_days é um time_point baseado em dias desde 1970-01-01
+    sys_days tp1 = ref;
+    sys_days tp2 = venc;
+
+	// diferença de dias
+    auto diff = tp2 - tp1; 
+	// se > 9999, retorna para 1000
+	if (diff.count() > 9999)
+		return 1000 + diff.count() % 10000; 
+	else
+		return diff.count() % 10000; 
+}
+

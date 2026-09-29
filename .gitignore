@@ -71,3 +71,5 @@ decodificador
 codificador
 .project
 .cproject
+/.vscode
+/bin
