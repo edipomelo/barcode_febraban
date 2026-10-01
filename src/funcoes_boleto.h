@@ -117,6 +117,22 @@ int modulo10(std::string linhadigi, int campo)
 	}
 }
 
+string formatarlinhadigitavel(string codigo_barras)
+{
+	string linha_digitavel_semDV = conversao(codigo_barras);
+	string DV_campo1 = to_string(modulo10(linha_digitavel_semDV, 1));
+	string DV_campo2 = to_string(modulo10(linha_digitavel_semDV, 2));
+	string DV_campo3 = to_string(modulo10(linha_digitavel_semDV, 3));
+	string DV_principal = to_string(modulo11(codigo_barras));
+
+	string linha_digitavel = linha_digitavel_semDV.substr(0, 5) + "." + linha_digitavel_semDV.substr(5, 4) + DV_campo1 + " " +
+							 linha_digitavel_semDV.substr(9, 5) + "." + linha_digitavel_semDV.substr(14, 5) + DV_campo2 + " " +
+							 linha_digitavel_semDV.substr(19, 5) + "." + linha_digitavel_semDV.substr(24, 5) + DV_campo3 + " " +
+							 DV_principal + " " + linha_digitavel_semDV.substr(29, 4) + linha_digitavel_semDV.substr(33, 10);
+
+	return linha_digitavel;
+}
+
 int fator_vencimento(string data_vencimento)
 {
 	// usando a biblioteca chrono para calcular a diferença de dias
@@ -143,4 +159,16 @@ int fator_vencimento(string data_vencimento)
 		return 1000 + diff.count() % 10000;
 	else
 		return diff.count() % 10000;
+}
+
+// string data_vencimento_formatada(string codigo_barras) // retorna a data de vencimento no formato DD/MM/AAAA
+//{
+//	string data = fator_vencimento(codigo_barras.substr(5, 4));
+//	return data.substr(0, 2) + "/" + data.substr(2, 2) + "/" + data.substr(4, 4);
+// }
+
+string valor_formatado(string valor) // retorna o valor no formato XXXXX,XX
+{
+	int tamanho = valor.length();
+	return valor.substr(0, tamanho - 2) + "," + valor.substr(tamanho - 2);
 }
