@@ -6,18 +6,20 @@ int codigo_banco;
 int codigo_moeda;
 string data_vencimento;
 string valor;
-long campo_livre;
-string codigo_barras;
+string campo_livre;
+string cod_barras;
 int digito_verificador;
 string linha_digitavel;
 
 int main(int argc, char **argv) {
 	cout << "Informe o código de barras:" << endl;
-	cin >> codigo_barras;
+	// cin >> codigo_barras;
+	cod_barras = "00193373700000001000500940144816060680935031"; // exemplo de código de barras
 
 	// funções para decodificar o código de barras
-
+	string linha_digitavel = conversao(cod_barras);
 	// eixibindo:
+	cout << "Linha digitável: " << linha_digitavel << endl;
 	// 01 a 03 - Código do Banco na Câmara de Compensação = '001'
 	cout << "Código do banco: " << codigo_banco << endl;
 	// 04 a 04 - Código da Moeda = 9 (Real) - FIXO
