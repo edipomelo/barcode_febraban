@@ -71,13 +71,16 @@ int calcmod10(string camposemponto)
 // calcula o dígito verificador de um número (MÓDULO 11)
 int modulo11(string codigodebarras)
 {
-	std::string cadigodebarrasNODV = codigodebarras.substr(0, 4) + codigodebarras.substr(5); // retira o digito verificador do módulo de 11
+	//std::string cadigodebarrasNODV = codigodebarras.substr(0, 4) + codigodebarras.substr(5); // retira o digito verificador do módulo de 11
+	// OBS: a linha acima será removida, pois o código de barras vem sem o DV.	
 	int soma = 0;
 	int multiplicador = 2; // começa no 2
 
-	for (int i = (int)cadigodebarrasNODV.length() - 1; i >= 0; i--) // percorre todo o codigo sem o DV
+	// for (int i = (int)cadigodebarrasNODV.length() - 1; i >= 0; i--) // percorre todo o codigo sem o DV
+	for (int i = (int)codigodebarras.length() - 1; i >= 0; i--)
 	{
-		int n = cadigodebarrasNODV[i] - '0'; // transforma em int
+		// int n = cadigodebarrasNODV[i] - '0'; // transforma em int
+		int n = codigodebarras[i] - '0';
 		soma += n * multiplicador;
 		multiplicador++;
 		if (multiplicador > 9) // impede do multiplicador passar de 9
@@ -143,4 +146,27 @@ int fator_vencimento(string data_vencimento)
 		return 1000 + diff.count() % 10000;
 	else
 		return diff.count() % 10000;
+}
+
+string codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+	string result = "";
+	// Posição | Tamanho | Picture   | Conteúdo
+	// 01 a 03 | 03      | 9(03)     | Código do Banco na Câmara de Compensação = '001'
+	result += format("{:03d}", cod_banco);
+	// 04 a 04 | 01      | 9(01)     | Código da Moeda = 9 (Real)
+	result += to_string(cod_moeda);
+	// 05 a 05 | 01      | 9(01)     | Digito Verificador (DV) do código de Barras*
+	// 06 a 09 | 04      | 9(04)     | Fator de Vencimento **
+	result += format("{:04d}", fator_vencimento(data_vencimento));
+	// 10 a 19 | 10      | 9(08)V(2) | Valor
+	//valor_boleto = valor_boleto.replace(",", "").replace(".", ""); // remove vírgula ou ponto
+	erase(valor_boleto, ',');
+	erase(valor_boleto, '.'); // remove vírgula e ponto
+	result += format("{:0>10}", valor_boleto); // preenche com zero a esquerda
+	// 20 a 44 | 03      | 9(03)     | Campo Livre ***
+	result += format("{:0>25}", campo_livre); // de 20 a 44 são 25
+	int dv = modulo11(result);
+	// monta o código de barras com o DV
+	result = result.substr(0, 4) + to_string(dv) + result.substr(4,43);
+	return result;
 }
