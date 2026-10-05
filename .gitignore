@@ -73,3 +73,5 @@ codificador
 .cproject
 /.vscode
 /bin
+teste
+src/testes.cpp

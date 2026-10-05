@@ -17,13 +17,15 @@ int main(int argc, char **argv)
 	cout << "Informe o código de barras:" << endl;
 	cin >> codigo_barras;
 
+	// Exemplo de codigo de barras: 00193373700000001000500940144816060680935031
+
 	linha_digitavel = formatarlinhadigitavel(codigo_barras);
 	codigo_banco = codigo_barras.substr(0, 3);
 	codigo_moeda = codigo_barras.substr(3, 1);
 	digito_verificador = codigo_barras.substr(4, 1);
-	// data_vencimento = data_vencimento_formatada(codigo_barras); // vou organizar
-	valor = valor_formatado(codigo_barras.substr(9, 10)); // valor esta saindo errado
-	campo_livre = linha_digitavel.substr(44);
+	data_vencimento = data_vencimento_formatada(codigo_barras);
+	valor = valor_formatado(codigo_barras);
+	campo_livre = codigo_barras.substr(19);
 
 	// Linha digitável
 	cout << "Linha digitável: " << linha_digitavel << endl;
@@ -34,7 +36,7 @@ int main(int argc, char **argv)
 	// 05 a 05 - Digito Verificador (DV) do código de Barras
 	cout << "Dígito verificador: " << digito_verificador << endl;
 	// 06 a 09 - Fator de Vencimento
-	// cout << "Data de vencimento (DD/MM/AAAA): " << data_vencimento << endl;
+	cout << "Data de vencimento (DD/MM/AAAA): " << data_vencimento << endl;
 	// 10 a 19 - Valor
 	cout << "Valor a ser pago (casa decimal separada por vírgula): " << valor << endl;
 	// 20 a 44 - Campo Livre

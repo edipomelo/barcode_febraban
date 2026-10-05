@@ -71,13 +71,16 @@ int calcmod10(string camposemponto)
 // calcula o dígito verificador de um número (MÓDULO 11)
 int modulo11(string codigodebarras)
 {
-	std::string cadigodebarrasNODV = codigodebarras.substr(0, 4) + codigodebarras.substr(5); // retira o digito verificador do módulo de 11
+	// std::string cadigodebarrasNODV = codigodebarras.substr(0, 4) + codigodebarras.substr(5); // retira o digito verificador do módulo de 11
+	//  OBS: a linha acima será removida, pois o código de barras vem sem o DV.
 	int soma = 0;
 	int multiplicador = 2; // começa no 2
 
-	for (int i = (int)cadigodebarrasNODV.length() - 1; i >= 0; i--) // percorre todo o codigo sem o DV
+	// for (int i = (int)cadigodebarrasNODV.length() - 1; i >= 0; i--) // percorre todo o codigo sem o DV
+	for (int i = (int)codigodebarras.length() - 1; i >= 0; i--)
 	{
-		int n = cadigodebarrasNODV[i] - '0'; // transforma em int
+		// int n = cadigodebarrasNODV[i] - '0'; // transforma em int
+		int n = codigodebarras[i] - '0';
 		soma += n * multiplicador;
 		multiplicador++;
 		if (multiplicador > 9) // impede do multiplicador passar de 9
@@ -161,14 +164,47 @@ int fator_vencimento(string data_vencimento)
 		return diff.count() % 10000;
 }
 
-// string data_vencimento_formatada(string codigo_barras) // retorna a data de vencimento no formato DD/MM/AAAA
-//{
-//	string data = fator_vencimento(codigo_barras.substr(5, 4));
-//	return data.substr(0, 2) + "/" + data.substr(2, 2) + "/" + data.substr(4, 4);
-// }
-
-string valor_formatado(string valor) // retorna o valor no formato XXXXX,XX
+string data_vencimento_formatada(string codigo_barras) // retorna a data de vencimento no formato DD/MM/AAAA
 {
-	int tamanho = valor.length();
-	return valor.substr(0, tamanho - 2) + "," + valor.substr(tamanho - 2);
+	using namespace std::chrono;
+
+	// copia o fator de vencimento do código de barras
+	int fatorvencimento = stoi(codigo_barras.substr(5, 4));
+
+	// data de referência
+	year_month_day ref{year{1997}, month{10}, day{7}};
+	sys_days tp1 = ref;
+
+	// dia atual
+	sys_days hoje = floor<days>(system_clock::now());
+
+	// data do primeiro cliclo
+	sys_days ciclo = tp1 + days{fatorvencimento};
+
+	// enquanto a data estiver mais de 4500 dias (metade do ciclo)
+	// no passado, pula para o próximo ciclo.
+	while (ciclo < hoje - days{4500})
+	{
+		ciclo += days{9000};
+	}
+
+	year_month_day data{ciclo};
+
+	string dia = to_string((unsigned)data.day());
+	string mes = to_string((unsigned)data.month());
+	if (mes.size() < 2)
+		mes = "0" + mes;
+	string ano = to_string((int)data.year());
+
+	return dia + "/" + mes + "/" + ano;
+}
+
+string valor_formatado(string codigobarras) // retorna o valor no formato XXXXX,XX
+{
+	long long centavos = stoll(codigobarras.substr(9, 10));
+	string reais = to_string(centavos / 100);
+	string cents = to_string(centavos % 100);
+	if (cents.size() < 2)
+		cents = "0" + cents;
+	return reais + "," + cents;
 }
