@@ -28,10 +28,13 @@ int main(int argc, char **argv) {
 	cout << "\nCampo livre (somente dígitos): ";
 	cin >> campo_livre;
 
-	// funções para gerar o código de barras
-	cout << "\nCódigo de barras gerado: " 
-		 << codigo_barras(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre) 
-		 << endl;
-
+	if (valida_dados(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre)) 
+		cout << "\nCódigo de barras gerado: " 
+			<< gera_codigo_barras(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre) 
+			<< endl;
+	else {
+		cout << "Código de barras não foi gerado." << endl;
+		return 1;
+	}
 	return 0;
 }

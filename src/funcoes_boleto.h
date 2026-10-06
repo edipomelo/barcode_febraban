@@ -208,3 +208,30 @@ string valor_formatado(string codigobarras) // retorna o valor no formato XXXXX,
 		cents = "0" + cents;
 	return reais + "," + cents;
 }
+
+bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+	return true;
+}
+
+string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+	string result = "";
+	// Posição | Tamanho | Picture   | Conteúdo
+	// 01 a 03 | 03      | 9(03)     | Código do Banco na Câmara de Compensação = '001'
+	result += format("{:03d}", cod_banco);
+	// 04 a 04 | 01      | 9(01)     | Código da Moeda = 9 (Real)
+	result += to_string(cod_moeda);
+	// 05 a 05 | 01      | 9(01)     | Digito Verificador (DV) do código de Barras*
+	// 06 a 09 | 04      | 9(04)     | Fator de Vencimento **
+	result += format("{:04d}", fator_vencimento(data_vencimento));
+	// 10 a 19 | 10      | 9(08)V(2) | Valor
+	//valor_boleto = valor_boleto.replace(",", "").replace(".", ""); // remove vírgula ou ponto
+	erase(valor_boleto, ',');
+	erase(valor_boleto, '.'); // remove vírgula e ponto
+	result += format("{:0>10}", valor_boleto); // preenche com zero a esquerda
+	// 20 a 44 | 03      | 9(03)     | Campo Livre ***
+	result += format("{:0>25}", campo_livre); // de 20 a 44 são 25
+	int dv = modulo11(result);
+	// monta o código de barras com o DV
+	result = result.substr(0, 4) + to_string(dv) + result.substr(4,43);
+	return result;
+}

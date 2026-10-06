@@ -75,3 +75,5 @@ codificador
 /bin
 teste
 src/testes.cpp
+teste_codificador.sh
+.DS_Store
