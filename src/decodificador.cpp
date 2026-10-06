@@ -1,6 +1,6 @@
-#import <iostream>
-#import "funcoes_boleto.h"
-#import <string>
+#include <iostream>
+#include "funcoes_boleto.h"
+#include <string>
 using namespace std;
 
 string codigo_banco;
