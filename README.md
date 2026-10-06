@@ -37,3 +37,27 @@ Este projeto é licenciado sob a GNU General Public License (GPL), que permite e
 |                 | Édipo Melo | Vinicius Cavalcanti |
 |-----------------|------------|---------------------|
 | % implementação |          - |                   - | 
+
+# Implementação // organizar
+
+compilador C++ com suporte ao padrão C++17, como o g++. Os comandos abaixo devem ser executados no terminal dentro da pasta que contém os arquivos c++, ".cpp". 
+
+## Decodificador:
+
+Windows:
+- g++ -std=c++20 -o decodificador.cpp -o decodificador.exe
+.\decodificador.exe
+
+Linux:
+- g++ -std=c++20 -o decodificador.cpp -o decodificador  
+./decodificador
+
+## Codificador:
+
+Windows:
+- g++ -std=c++20 -o codificador.cpp -o codificador.exe
+.\codificador.exe
+
+Linux:
+- g++ -std=c++20 -o codificador.cpp -o codificador
+./codificador
