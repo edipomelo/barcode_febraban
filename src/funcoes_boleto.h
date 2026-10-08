@@ -209,8 +209,56 @@ string valor_formatado(string codigobarras) // retorna o valor no formato XXXXX,
 	return reais + "," + cents;
 }
 
-bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+// retirado de: https://en.cppreference.com/cpp/chrono/parse
+bool is_data_valida(string data) {
+	istringstream is(data);
+	std::chrono::year_month_day ymd;
+    is >> std::chrono::parse("%d/%m/%Y", ymd);
+	if (is.fail()) {
+		cout << "Data inválida!" << endl;
+		return false;
+	}
 	return true;
+}
+
+bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+	bool result = true;
+	// código do banco: 3 dígitos
+	if (cod_banco < 1 || cod_banco > 999) {
+		cout << "Código do banco inválido. Deve ser um número entre 1 e 999." << endl;
+		result = false;
+	}
+	// código da moeda: 1 dígito
+	if (cod_moeda < 1 || cod_moeda > 9) {
+		cout << "Código da moeda inválido. Deve ser um número entre 1 e 9." << endl;
+		result = false;
+	}
+	// data de vencimento: formato DD/MM/AAAA
+	cout << "validando data de vencimento: " << data_vencimento << endl;
+	if (data_vencimento.length() != 10 || data_vencimento[2] != '/' || data_vencimento[5] != '/') {
+		cout << "Data de vencimento inválida. Deve estar no formato DD/MM/AAAA." << endl;
+		result = false;
+	} else if (!is_data_valida(data_vencimento)) {
+			cout << "Data de vencimento inexistente." << endl;
+			result = false;
+		}
+	// valor do boleto: formato XXXXX,XX
+	if (valor_boleto.length() > 11 || valor_boleto[valor_boleto.length() - 3] != ',') {
+		cout << "Valor do boleto inválido. Deve estar no formato XXXXX,XX e ter, no máximo 11 caracteres." << endl;
+		result = false;
+	}
+	if (campo_livre.length() > 25) {
+		cout << "Campo livre inválido. Deve ter, no máximo, 25 dígitos." << endl;
+		result = false;
+	}
+	// campo livre: somente dígitos
+	for (char c : campo_livre) {
+		if (!isdigit(c)) {
+			cout << "Campo livre inválido. Deve conter apenas dígitos." << endl;
+			result = false;
+		}
+	}
+	return result;
 }
 
 string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
