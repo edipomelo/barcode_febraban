@@ -9,7 +9,8 @@ string data_vencimento;
 string valor;
 string campo_livre;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	cout << "Informe os parâmetros para gerar o código de barras:" << endl;
 	// 01 a 03 - Código do Banco na Câmara de Compensação = '001'
 	cout << "Código do banco: ";
@@ -17,7 +18,7 @@ int main(int argc, char **argv) {
 	// 04 a 04 - Código da Moeda = 9 (Real) - FIXO
 	cout << "\nCódigo da moeda (9 - Real):";
 	cin >> codigo_moeda;
-    // 05 a 05 - Digito Verificador (DV) do código de Barras - CALCULADO
+	// 05 a 05 - Digito Verificador (DV) do código de Barras - CALCULADO
 	// 06 a 09 - Fator de Vencimento
 	cout << "\nData de vencimento (DD/MM/AAAA): ";
 	cin >> data_vencimento;
@@ -28,11 +29,12 @@ int main(int argc, char **argv) {
 	cout << "\nCampo livre (somente dígitos): ";
 	cin >> campo_livre;
 
-	if (valida_dados(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre)) 
-		cout << "\nCódigo de barras gerado: " 
-			<< gera_codigo_barras(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre) 
-			<< endl;
-	else {
+	if (valida_dados(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre))
+		cout << "\nCódigo de barras gerado: "
+			 << gera_codigo_barras(codigo_banco, codigo_moeda, data_vencimento, valor, campo_livre)
+			 << endl;
+	else
+	{
 		cout << "Código de barras não foi gerado." << endl;
 		return 1;
 	}

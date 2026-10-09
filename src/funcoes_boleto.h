@@ -171,29 +171,22 @@ string data_vencimento_formatada(string codigo_barras) // retorna a data de venc
 	// copia o fator de vencimento do código de barras
 	int fatorvencimento = stoi(codigo_barras.substr(5, 4));
 
-	// data de referência
-	year_month_day ref{year{1997}, month{10}, day{7}};
-	sys_days tp1 = ref;
+	// Data usada para referência de datas de vencimento que sucedem a data de 22/02/2025. De acordo com a Febraban, o fator de vencimento será reiniciado a partir desta data.
+	year_month_day ref{year{2025}, month{2}, day{23}};
+	sys_days dataref = ref;
 
-	// dia atual
-	sys_days hoje = floor<days>(system_clock::now());
+	// calcula a data de vencimento a partir do fator de vencimento
+	sys_days DataCerta = dataref + days{fatorvencimento - 1001};
 
-	// data do primeiro cliclo
-	sys_days ciclo = tp1 + days{fatorvencimento};
+	year_month_day data{DataCerta};
 
-	// enquanto a data estiver mais de 4500 dias (metade do ciclo)
-	// no passado, pula para o próximo ciclo.
-	while (ciclo < hoje - days{4500})
-	{
-		ciclo += days{9000};
-	}
-
-	year_month_day data{ciclo};
-
+	// Passa as de sys_days para string e formata a data no formato DD/MM/AAAA
 	string dia = to_string((unsigned)data.day());
 	string mes = to_string((unsigned)data.month());
 	if (mes.size() < 2)
 		mes = "0" + mes;
+	if (dia.size() < 2)
+		dia = "0" + dia;
 	string ano = to_string((int)data.year());
 
 	return dia + "/" + mes + "/" + ano;
@@ -210,50 +203,62 @@ string valor_formatado(string codigobarras) // retorna o valor no formato XXXXX,
 }
 
 // retirado de: https://en.cppreference.com/cpp/chrono/parse
-bool is_data_valida(string data) {
+bool is_data_valida(string data)
+{
 	istringstream is(data);
 	std::chrono::year_month_day ymd;
-    is >> std::chrono::parse("%d/%m/%Y", ymd);
-	if (is.fail()) {
+	is >> std::chrono::parse("%d/%m/%Y", ymd);
+	if (is.fail())
+	{
 		cout << "Data inválida!" << endl;
 		return false;
 	}
 	return true;
 }
 
-bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre)
+{
 	bool result = true;
 	// código do banco: 3 dígitos
-	if (cod_banco < 1 || cod_banco > 999) {
+	if (cod_banco < 1 || cod_banco > 999)
+	{
 		cout << "Código do banco inválido. Deve ser um número entre 1 e 999." << endl;
 		result = false;
 	}
 	// código da moeda: 1 dígito
-	if (cod_moeda < 1 || cod_moeda > 9) {
+	if (cod_moeda < 1 || cod_moeda > 9)
+	{
 		cout << "Código da moeda inválido. Deve ser um número entre 1 e 9." << endl;
 		result = false;
 	}
 	// data de vencimento: formato DD/MM/AAAA
-	cout << "validando data de vencimento: " << data_vencimento << endl;
-	if (data_vencimento.length() != 10 || data_vencimento[2] != '/' || data_vencimento[5] != '/') {
+	cout << "\nValidando data de vencimento: " << data_vencimento << endl;
+	if (data_vencimento.length() != 10 || data_vencimento[2] != '/' || data_vencimento[5] != '/')
+	{
 		cout << "Data de vencimento inválida. Deve estar no formato DD/MM/AAAA." << endl;
 		result = false;
-	} else if (!is_data_valida(data_vencimento)) {
-			cout << "Data de vencimento inexistente." << endl;
-			result = false;
-		}
+	}
+	else if (!is_data_valida(data_vencimento))
+	{
+		cout << "Data de vencimento inexistente." << endl;
+		result = false;
+	}
 	// valor do boleto: formato XXXXX,XX
-	if (valor_boleto.length() > 11 || valor_boleto[valor_boleto.length() - 3] != ',') {
+	if (valor_boleto.length() > 11 || valor_boleto[valor_boleto.length() - 3] != ',')
+	{
 		cout << "Valor do boleto inválido. Deve estar no formato XXXXX,XX e ter, no máximo 11 caracteres." << endl;
 		result = false;
 	}
-	if (campo_livre.length() > 25) {
+	if (campo_livre.length() > 25)
+	{
 		cout << "Campo livre inválido. Deve ter, no máximo, 25 dígitos." << endl;
 		result = false;
 	}
 	// campo livre: somente dígitos
-	for (char c : campo_livre) {
-		if (!isdigit(c)) {
+	for (char c : campo_livre)
+	{
+		if (!isdigit(c))
+		{
 			cout << "Campo livre inválido. Deve conter apenas dígitos." << endl;
 			result = false;
 		}
@@ -261,7 +266,8 @@ bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string v
 	return result;
 }
 
-string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre) {
+string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre)
+{
 	string result = "";
 	// Posição | Tamanho | Picture   | Conteúdo
 	// 01 a 03 | 03      | 9(03)     | Código do Banco na Câmara de Compensação = '001'
@@ -272,14 +278,14 @@ string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, 
 	// 06 a 09 | 04      | 9(04)     | Fator de Vencimento **
 	result += format("{:04d}", fator_vencimento(data_vencimento));
 	// 10 a 19 | 10      | 9(08)V(2) | Valor
-	//valor_boleto = valor_boleto.replace(",", "").replace(".", ""); // remove vírgula ou ponto
+	// valor_boleto = valor_boleto.replace(",", "").replace(".", ""); // remove vírgula ou ponto
 	erase(valor_boleto, ',');
-	erase(valor_boleto, '.'); // remove vírgula e ponto
+	erase(valor_boleto, '.');				   // remove vírgula e ponto
 	result += format("{:0>10}", valor_boleto); // preenche com zero a esquerda
 	// 20 a 44 | 03      | 9(03)     | Campo Livre ***
 	result += format("{:0>25}", campo_livre); // de 20 a 44 são 25
 	int dv = modulo11(result);
 	// monta o código de barras com o DV
-	result = result.substr(0, 4) + to_string(dv) + result.substr(4,43);
+	result = result.substr(0, 4) + to_string(dv) + result.substr(4, 43);
 	return result;
 }
