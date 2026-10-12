@@ -32,9 +32,9 @@ int main(int argc, char **argv)
 	cout << "\nValor a ser pago (casa decimal separada por vírgula): ";
 	cin >> valor;
 	// 20 a 44 - Campo Livre
-	cout << "\nTipo do Convênio (somente dígitos): ";
+	cout << "\nTipo do Convênio (4, 5, 7 ou 17): ";
 	cin >> tipo_convenio;
-	cout << "\nCampo livre (4, 5, 7 ou 17): ";
+	cout << "\nCampo livre" << endl;;
 	if (tipo_convenio != 4 && tipo_convenio != 5 && tipo_convenio != 7 && tipo_convenio != 17) {
 		cout << "Convênio inválido. Deve ser 4, 5, 7 ou 17." << endl;
 		return 1;
