@@ -126,7 +126,7 @@ string formatarlinhadigitavel(string codigo_barras)
 	string DV_campo1 = to_string(modulo10(linha_digitavel_semDV, 1));
 	string DV_campo2 = to_string(modulo10(linha_digitavel_semDV, 2));
 	string DV_campo3 = to_string(modulo10(linha_digitavel_semDV, 3));
-	string DV_principal = to_string(modulo11(codigo_barras));
+	string DV_principal = codigo_barras.substr(4, 1); // extrai o DV do código de barras
 
 	string linha_digitavel = linha_digitavel_semDV.substr(0, 5) + "." + linha_digitavel_semDV.substr(5, 4) + DV_campo1 + " " +
 							 linha_digitavel_semDV.substr(9, 5) + "." + linha_digitavel_semDV.substr(14, 5) + DV_campo2 + " " +
@@ -202,21 +202,109 @@ string valor_formatado(string codigobarras) // retorna o valor no formato XXXXX,
 	return reais + "," + cents;
 }
 
-// retirado de: https://en.cppreference.com/cpp/chrono/parse
+// ajustado para o padrão POSICS (a versão anterior no MacOS não compila com clang sem erro)
 bool is_data_valida(string data)
 {
-	istringstream is(data);
-	std::chrono::year_month_day ymd;
-	is >> std::chrono::parse("%d/%m/%Y", ymd);
-	if (is.fail())
-	{
-		cout << "Data inválida!" << endl;
-		return false;
-	}
-	return true;
+	    struct tm tm = {};
+    // strptime retorna NULL se o formato não casar
+    if (strptime(data.c_str(), "%d/%m/%Y", &tm) == NULL)
+    {
+        cout << "Data inválida!" << endl;
+        return false;
+    }
+
+    // Verifica se a data existe de fato (ex.: rejeita 31/02/2024)
+    tm.tm_isdst = -1;
+    time_t t = mktime(&tm);
+    if (t == -1)
+        return false;
+
+    // mktime normaliza campos inválidos; se mudou, a data era inexistente
+    struct tm *v = localtime(&t);
+    if (v->tm_mday != tm.tm_mday || v->tm_mon != tm.tm_mon || v->tm_year != tm.tm_year)
+    {
+        cout << "Data inexistente!" << endl;
+        return false;
+    }
+
+    return true;
 }
 
-bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre)
+bool valida_dados_conveio(int tipo_convenio, string numero_convenio, string nosso_numero, 
+	string carteira, string agencia, string numero_conta, string campo_livre) {
+	bool result = true;
+	// campo livre: somente dígitos
+	for (char c : campo_livre) {
+		if (!isdigit(c)) {
+			cout << "Campo livre inválido. Deve conter apenas dígitos." << endl;
+			result = false;
+		}
+	}
+	// comum para todos, exceto convênio 17: [nosso número 11][carteira 2][agência 4]
+	if (tipo_convenio != 17) {
+		if (nosso_numero.length() == 0 || nosso_numero.length() > 11) {
+			cout << "Nosso número inválido. Deve ter, no máximo, 11 dígitos." << endl;
+			result = false;
+		}
+		if (carteira.length() == 0 || carteira.length() > 2) {
+			cout << "Carteira inválida. Deve ter, no máximo, 2 dígitos." << endl;
+			result = false;
+		}
+		if (agencia.length() == 0 || agencia.length() > 4) {
+			cout << "Agência inválida. Deve ter, no máximo, 4 dígitos." << endl;
+			result = false;
+		}
+	}
+	switch (tipo_convenio) { 
+		//Convênio 04: [convênio 4][conta 4] 
+		case 4: 
+			if (numero_convenio.length() == 0 || numero_convenio.length() > 4) {
+				cout << "Convênio inválido. Deve ter, no máximo, 4 dígitos." << endl;
+				result = false;
+			}
+			if (numero_conta.length() == 0 || numero_conta.length() > 4) {
+				cout << "Número da conta inválido. Deve ter, no máximo, 4 dígitos." << endl;
+				result = false;
+			}
+			break;
+		//Convênio 05: [convênio 5][conta 3] → soma 25
+		case 5:
+			if (numero_convenio.length() == 0 || numero_convenio.length() > 5) {
+				cout << "Convênio inválido. Deve ter, no máximo, 5 dígitos." << endl;
+				result = false;
+			}
+			if (numero_conta.length() == 0 || numero_conta.length() > 3) {
+				cout << "Número da conta inválido. Deve ter, no máximo, 3 dígitos." << endl;
+				result = false;
+			}
+			break;
+		// Convênio 07: [convênio 7][conta 1] → soma 25
+		case 7:
+			if (numero_convenio.length() == 0 || numero_convenio.length() > 7) {
+				cout << "Convênio inválido. Deve ter, no máximo, 7 dígitos." << endl;
+				result = false;
+			}
+			if (numero_conta.length() != 1) {
+				cout << "Número da conta inválido. Deve ter 1 dígito." << endl;
+				result = false;
+			}
+			break;
+		// 	Livre 17: [convênio 17][nosso número 8]
+		case 17:
+			if (numero_convenio.length() == 0 || numero_convenio.length() > 17) {
+				cout << "Convênio inválido. Deve ter, no máximo, 17 dígitos." << endl;
+				result = false;
+			}
+			if (nosso_numero.length() == 0 || nosso_numero.length() > 8) {
+				cout << "Nosso número inválido. Deve ter, no máximo, 8 dígitos." << endl;
+				result = false;
+			}
+			break;
+	}
+	return result;
+}
+
+bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto)
 {
 	bool result = true;
 	// código do banco: 3 dígitos
@@ -244,26 +332,44 @@ bool valida_dados(int cod_banco, int cod_moeda, string data_vencimento, string v
 		result = false;
 	}
 	// valor do boleto: formato XXXXX,XX
-	if (valor_boleto.length() > 11 || valor_boleto[valor_boleto.length() - 3] != ',')
+	if (valor_boleto.length() < 3 || valor_boleto.length() > 11 || valor_boleto[valor_boleto.length() - 3] != ',')
 	{
 		cout << "Valor do boleto inválido. Deve estar no formato XXXXX,XX e ter, no máximo 11 caracteres." << endl;
 		result = false;
 	}
-	if (campo_livre.length() > 25)
-	{
-		cout << "Campo livre inválido. Deve ter, no máximo, 25 dígitos." << endl;
-		result = false;
-	}
-	// campo livre: somente dígitos
-	for (char c : campo_livre)
-	{
-		if (!isdigit(c))
-		{
-			cout << "Campo livre inválido. Deve conter apenas dígitos." << endl;
-			result = false;
-		}
-	}
 	return result;
+}
+
+	// Gera o campo livre (25 dígitos) do código de barras a partir dos dados do convênio.
+	// tipo_convenio: 4, 5, 7 (tamanho do número do convênio) ou 17 (livre).
+	// Retorna string vazia se o tipo for inválido.
+string gera_campo_livre(int tipo_convenio, string numero_convenio,
+                        string nosso_numero, string carteira,
+                        string agencia, string numero_conta) {
+    switch (tipo_convenio) {
+		case 4:
+			return format("{:0>4}",  numero_convenio)
+				+ format("{:0>11}", nosso_numero)
+				+ format("{:0>2}",  carteira)
+				+ format("{:0>4}",  agencia)
+				+ format("{:0>4}",  numero_conta);   // 4+11+2+4+4 = 25
+		case 5:
+			return format("{:0>5}",  numero_convenio)
+				+ format("{:0>11}", nosso_numero)
+				+ format("{:0>2}",  carteira)
+				+ format("{:0>4}",  agencia)
+				+ format("{:0>3}",  numero_conta);   // 5+11+2+4+3 = 25
+		case 7:
+			return format("{:0>7}",  numero_convenio)
+				+ format("{:0>11}", nosso_numero)
+				+ format("{:0>2}",  carteira)
+				+ format("{:0>4}",  agencia)
+				+ format("{:0>1}",  numero_conta);   // 7+11+2+4+1 = 25
+		case 17:
+			return format("{:0>17}", numero_convenio)
+				+ format("{:0>8}",  nosso_numero);    // 17+8 = 25	
+    }
+	throw invalid_argument("Tipo de convênio inválido. Deve ser 4, 5, 7 ou 17.");
 }
 
 string gera_codigo_barras(int cod_banco, int cod_moeda, string data_vencimento, string valor_boleto, string campo_livre)

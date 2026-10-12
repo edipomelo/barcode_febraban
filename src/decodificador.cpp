@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	digito_verificador = codigo_barras.substr(4, 1);
 	dados.data_vencimento = data_vencimento_formatada(codigo_barras);
 	dados.valor = valor_formatado(codigo_barras);
-	dados.campo_livre = codigo_barras.substr(17);
+	dados.campo_livre = codigo_barras.substr(19, 25);
 
 	// Linha digitável
 	cout << "Linha digitável: " << dados.linha_digitavel << endl;
