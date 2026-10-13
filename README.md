@@ -34,9 +34,10 @@ Este projeto é licenciado sob a GNU General Public License (GPL), que permite e
 
 # Autores
 
-|                 | Édipo Melo | Vinicius Cavalcanti |
-|-----------------|------------|---------------------|
-| % implementação |          - |                   - | 
+| Nome                | Participação (de 0 a 10) |
+|---------------------|--------------------------|
+| Édipo Melo          |                       10 | 
+| Vinicius Cavalcanti |                       10 | 
 
 # Implementação // organizar
 
